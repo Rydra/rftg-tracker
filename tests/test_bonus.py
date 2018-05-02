@@ -17,14 +17,14 @@ class TestBonus:
 
     def test_military_is_a_composed_bonus(self):
         player = Empire('Irene')
-        player.add_cardkeyword(Keywords.REBEL, amount=3)
+        player.add_keyword(Keywords.REBEL, amount=3)
 
-        military_per_rebel_world = Bonus('Military_per_Rebel_world', value=1, modifier=lambda v: v * player.get_cardkeywords(Keywords.REBEL))
+        military_per_rebel_world = Bonus('Military_per_Rebel_world', value=1, modifier=lambda v: v * player.get_keyword_count(Keywords.REBEL))
         military_bonus = Bonus('Military', enhanced_by=[military_per_rebel_world], value=3)
 
         assert military_bonus.get_total_bonus() == 6
 
-        player.add_cardkeyword(Keywords.REBEL, amount=1)
+        player.add_keyword(Keywords.REBEL, amount=1)
 
         assert military_bonus.get_total_bonus() == 7
 

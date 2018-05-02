@@ -16,76 +16,71 @@ class Bonus:
     def get_total_bonus(self):
         return sum([enhancer.get_total_bonus() for enhancer in self.enhanced_by]) + self.modifier(self.value)
 
+import yaml
 
-bonus_metadata = {
-    'Military': {},
-    'Military_vs_Novelty': {
-        'enhanced_by': 'Military',
-    },
-    'Military_per_imperium': {
-        'enhances': 'Military',
-        'multiplied_by': 'IMPERIUM',
-        'value': 1
-    }
-}
+with open("resources/bonus.yaml", 'r') as fs:
+    try:
+        bonus_metadata = yaml.load(fs)
+    except yaml.YAMLError as e:
+        raise
 
 class Empire:
     NO_BONUS = Bonus('No bonus')
     def __init__(self, name, id=None, **kwargs):
         self.name = name
         self.bonuses = {}
-        self.cardkeywords = Counter()
-
-    def add_bonus(self, bonus):
-        if bonus.name in self.bonuses:
-            self.bonuses[bonus.name].value += bonus.value
-        else:
-            self.bonuses[bonus.name] = bonus
+        self.keywords = Counter()
 
     def get_bonus_value(self, bonus_name):
         return self.bonuses.get(bonus_name, self.NO_BONUS).get_total_bonus()
 
-    def add_cardkeyword(self, type, amount):
-        self.cardkeywords[type] += amount
+    def add_keyword(self, type, amount):
+        self.keywords[type] += amount
 
-    def add_bonus2(self, bonus_name, value=1):
+    def add_bonus(self, bonus_name, value=1):
         """A factory method that takes the bonus metadata, creates the bonus and links
         it with other bonuses if necessary"""
 
         if bonus_name not in bonus_metadata:
-            # Not a recognized card, just dump
-            return
+            raise Exception(f'Unrecognized bonus {bonus_name}')
 
         metadata = bonus_metadata[bonus_name]
-
-        modifier = lambda v: v
-        if 'multiplied_by' in metadata:
-            type = Keywords[metadata['multiplied_by']]
-            modifier = lambda v: v * self.cardkeywords[type]
-
-        value = value or metadata['value']
-
-        if bonus_name in self.bonuses:
-            bonus = self.bonuses[bonus_name]
-            bonus.value += value
-        else:
-            enhancers = []
-            if 'enhanced_by' in metadata:
-                enhancers.append(self.bonuses[metadata['enhanced_by']])
-
-            bonus = Bonus(name=bonus_name, value=value, enhanced_by=enhancers, modifier=modifier)
-
-        if 'enhances' in metadata:
-            enhanced_bonus = metadata['enhances']
-            if enhanced_bonus not in self.bonuses:
-                self.bonuses[enhanced_bonus] = Bonus(name=enhanced_bonus, value=0)
-
-            self.bonuses[enhanced_bonus].add_enhancer(bonus)
+        bonus = self._create_bonus(bonus_name, metadata, value)
+        self._enhance_other_bonuses(bonus, metadata)
 
         self.bonuses[bonus_name] = bonus
 
-    def get_cardkeywords(self, type):
-        return self.cardkeywords[type]
+    def _enhance_other_bonuses(self, bonus, metadata):
+        if 'enhances' in metadata:
+            enhanced_bonuses = metadata['enhances']
+            for enhanced_bonus in enhanced_bonuses:
+                if enhanced_bonus not in self.bonuses:
+                    self.bonuses[enhanced_bonus] = Bonus(name=enhanced_bonus, value=0)
+
+                self.bonuses[enhanced_bonus].add_enhancer(bonus)
+
+    def _create_bonus(self, bonus_name, metadata, value):
+        modifier = self._get_modifier(metadata)
+
+        value = value or metadata['value']
+        if bonus_name in self.bonuses:
+            # If the bonus is already assigned to the empire, just
+            # retrieve it and increase its value
+            bonus = self.bonuses[bonus_name]
+            bonus.value += value
+        else:
+            bonus = Bonus(name=bonus_name, value=value, modifier=modifier)
+        return bonus
+
+    def _get_modifier(self, metadata):
+        modifier = lambda v: v
+        if 'multiplied_by' in metadata:
+            type = Keywords[metadata['multiplied_by']]
+            modifier = lambda v: v * self.keywords[type]
+        return modifier
+
+    def get_keyword_count(self, type):
+        return self.keywords[type]
 
 
 class Keywords(Enum):
