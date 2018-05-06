@@ -1,12 +1,12 @@
 import pytest
 
-from domain import Empire, Keywords
+from domain import Player, Keywords
 
 
 class TestPlayer:
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.empire = Empire('Jimmy')
+        self.empire = Player('Jimmy')
 
     def test_when_increasing_a_bonus_it_gets_computed(self):
         self.empire.add_bonus(bonus_name='Draw_card_on_settle', value=2)
@@ -18,17 +18,17 @@ class TestPlayer:
         assert self.empire.get_bonus_value(bonus_name='Draw_card_on_settle') == 5
 
     def test_increase_a_specific_world_bonus(self):
-        self.empire.add_bonus(bonus_name='Military', value=3)
-        assert self.empire.get_bonus_value(bonus_name='Military') == 3
+        self.empire.add_bonus(bonus_name='Military', value=3, applies_to=Keywords.GENES)
+        assert self.empire.get_bonus_value(bonus_name='Military', applies_to=Keywords.GENES) == 3
 
     def test_return_0_if_no_bonus_has_been_added(self):
         assert self.empire.get_bonus_value(bonus_name='Draw_card_on_settle') == 0
 
     def test_nested_bonuses_stack(self):
         self.empire.add_bonus(bonus_name='Military', value=3)
-        self.empire.add_bonus(bonus_name='Military_vs_Novelty', value=2)
+        self.empire.add_bonus(bonus_name='Military', value=2, applies_to=Keywords.NOVELTY)
         assert self.empire.get_bonus_value(bonus_name='Military') == 3
-        assert self.empire.get_bonus_value(bonus_name='Military_vs_Novelty') == 5
+        assert self.empire.get_bonus_value(bonus_name='Military', applies_to=Keywords.NOVELTY) == 5
 
     def test_add_planet_types_to_the_empire(self):
         self.empire.add_keyword(type=Keywords.GENES, amount=1)

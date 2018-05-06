@@ -1,4 +1,4 @@
-from domain import Bonus, Empire, Keywords
+from domain import Bonus, Player, Keywords
 
 
 class TestBonus:
@@ -16,7 +16,7 @@ class TestBonus:
         assert military_per_rebel.get_total_bonus() == 3
 
     def test_military_is_a_composed_bonus(self):
-        player = Empire('Irene')
+        player = Player('Irene')
         player.add_keyword(Keywords.REBEL, amount=3)
 
         military_per_rebel_world = Bonus('Military_per_Rebel_world', value=1, modifier=lambda v: v * player.get_keyword_count(Keywords.REBEL))
@@ -33,6 +33,10 @@ class TestBonus:
         settle_discounts = Bonus('Settle_discount', value=3)
         discount_when_using_military = Bonus('Discount_when_using_military', value=1, enhanced_by=[settle_discounts])
         assert discount_when_using_military.get_total_bonus() == 4
+
+    def test_military_that_applies_to_some_kinds_of_planets(self):
+        military = Bonus('Military', value=2)
+        military_vs_rebel = Bonus('Military', value=4, applies_to=Keywords.REBEL)
 
     def test_produce_on_windfall(self):
         produce_on_windfall = Bonus('Produce_on_any_windfall', value=2)
