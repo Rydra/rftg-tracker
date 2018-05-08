@@ -77,7 +77,7 @@ def test_some_bonuses_may_depend_on_player_caracteristics():
         'statistic': 'MIGHT',
         'value': 1,
         'factor': 'additive',
-        'depends_on_keyword': 'POCKET'
+        'depends_on': 'POCKET'
     }]
 
     pocket_master = Enhancer(name='Pocket master', description=description, properties=properties)
@@ -89,3 +89,24 @@ def test_some_bonuses_may_depend_on_player_caracteristics():
 
     statistics = player.get_statistics()
     assert statistics['MIGHT'].actual_value == 7
+
+def test_stats_are_enhancers_as_well():
+    description = 'Increases your ability to run, but for every 5 points you lose 1 point of strength'
+    properties = [
+        {
+            'statistic': 'STRENGTH',
+            'value': -1 / 5,
+            'factor': 'additive',
+            'depends_on': 'RUNNING'
+        }
+    ]
+
+    stat_enhancer = Enhancer(name="Speed per Strength", description=description, properties=properties)
+
+    player = Player('Hercule')
+    player.add_statistic('RUNNING', value=7)
+    player.add_statistic('STRENGTH', value=4)
+    player.add_enhancer(stat_enhancer)
+
+    statistics = player.get_statistics()
+    assert statistics['STRENGTH'].actual_value == 3

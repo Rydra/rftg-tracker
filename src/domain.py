@@ -10,6 +10,7 @@ with open("resources/bonus.yaml", 'r') as fs:
         raise
 
 
+# We could also call them StatModifier
 class Enhancer:
     def __init__(self, name, description, properties):
         self.name = name
@@ -24,9 +25,10 @@ class Enhancer:
 
 
 class Statistic:
-    def __init__(self, name, value=0):
+    def __init__(self, name, value=0, description=None):
         self.name = name
         self.value = value
+        self.description = description
 
     def increase_base_value(self, amount):
         self.value += amount
@@ -55,6 +57,7 @@ class Player:
 
     def add_statistic(self, statistic_name, value=0):
         self.statistics[statistic_name] = Statistic(statistic_name, value)
+        self.keywords[statistic_name] += value
 
     def get_statistics(self):
         # NOTES: Why compute how do the different enhancers alter the statistics here instead of passing
@@ -78,9 +81,8 @@ class Player:
         for property in properties:
             factor = operator.mul if property['factor'] == 'multiplicative' else operator.add
 
-            dependant_keyword_factor = 1 if 'depends_on_keyword' not in property else self.get_keyword_count(
-                property['depends_on_keyword'])
-            value_to_multiply = dependant_keyword_factor * property['value']
+            dependant_keyword_factor = 1 if 'depends_on' not in property else self.get_keyword_count(property['depends_on'])
+            value_to_multiply = round(dependant_keyword_factor * property['value'])
             current_value = factor(current_value, value_to_multiply)
 
         return ActualStatistic(statname, statistic.value, current_value)
