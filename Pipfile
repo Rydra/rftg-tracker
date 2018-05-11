@@ -9,6 +9,8 @@ pytest-mock = "*"
 
 [packages]
 pyyaml = "*"
+numexpr = "*"
+asteval = "*"
 
 [requires]
 python_version = "3.6"

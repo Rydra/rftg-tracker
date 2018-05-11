@@ -1,0 +1,118 @@
+Military: {}
+Military_vs_Novelty: {}
+Military_vs_Rare: {}
+Military_vs_Genes: {}
+Military_vs_Alien: {}
+Military_vs_Rebel: {}
+Military_vs_Xeno: {}
+Military_vs_Xeno_per_normal_world:
+  enhances:
+    - Military_vs_Xeno
+  multiplied_by: NORMAL
+
+Military_per_imperium:
+  enhances:
+    - Military
+  multiplied_by: IMPERIUM
+  value: 1
+Military_per_cromosome:
+  enhances:
+    - Military
+  multiplied_by: CROMOSOME
+  value: 1
+Military_per_cromosome:
+  enhances:
+    - Military
+  multiplied_by: REBEL
+  value: 1
+
+Explore_draw_card: {}
+Explore_keep_card: {}
+Explore_draw_card_per_rebel:
+  enhances:
+    - Explore_draw_card
+  multiplied_by: REBEL
+  value: 1
+
+Develop_draw_on_placement: {}
+Develop_draw: {}
+Develop_discount: {}
+Repair: {}
+Draw_card_per_generated_good: {}
+Place_military_planets_as_normal_planets: {}
+Place_uplift_planets_as_normal_planets: {}
+Discount_when_placing_military_as_normal_worlds: {}
+
+Draw_extra_cards_on_trade:
+  enhances:
+    - Draw_extra_cards_when_trading_genes
+Draw_extra_cards_when_trading_genes: {}
+Draw_extra_cards_when_trading_rare: {}
+Draw_extra_cards_when_trading_novelty: {}
+Discard_good_for_extra_military: {}
+World_discount:
+  enhances:
+    - Rare_world_discount
+    - Alien_world_discount
+
+Rare_world_discount: {}
+Alien_world_discount: {}
+Draw_card_on_settle:
+  value: 1
+
+Draw_card_on_consume: {}
+
+
+Draw_card_on_produce: {}
+Draw_per_different_resource_produced: {}
+Draw_card_when_resource_produced: {}
+Produce_on_windfall_world: {}
+Draw_card_per_xeno_world:
+  enhances:
+    - Draw_card_on_produce
+  multiplied_by: MILITARY
+  value: 0.5
+Draw_card_per_rare_world:
+  enhances:
+    - Draw_card_on_produce
+  multiplied_by: RARE
+Draw_card_per_genes_world:
+  enhances:
+    - Draw_card_on_produce
+  multiplied_by: GENES
+
+ENHANCERS:
+  military_vs_novelty:
+    name: Military vs Novelty
+    description: Raised depending on military as well
+    properties:
+      - statistic: MILITARY VS NOVELTY
+        value: 1
+        depends_on: MILITARY
+        factor: additive
+
+ALL_KEYWORDS:
+  - NOVELTY
+  - RARE
+  - GENES
+  - ALIEN
+  - NORMAL
+  - REBEL
+  - XENO
+  - MILITARY
+  - IMPERIUM
+  - UPLIFT
+  - DEVELOPMENT
+  - ANTIXENO
+
+STATISTICS:
+  - MILITARY
+  - MILITARY VS NOVELTY
+  - DRAW ON SETTLE
+  - DISCOUNTS
+  - DRAW ON EXPLORE
+  - KEEP CARDS ON EXPLORE
+
+# Enhancers with which a player already starts with
+BASE_ENHANCERS:
+  - military_vs_novelty

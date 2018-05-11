@@ -1,4 +1,8 @@
+import parser
+from functools import reduce
+
 from domain import Statistic, Enhancer, Player
+from formula import Formula
 
 
 def test_a_statistic_has_a_name_and_a_base_value():
@@ -110,3 +114,68 @@ def test_stats_are_enhancers_as_well():
 
     statistics = player.get_statistics()
     assert statistics['STRENGTH'].actual_value == 3
+
+def test_some_stats_require_multiplicative_percentages():
+    description = 'Increases your chance to dodge'
+    properties = [
+        {
+            'statistic': 'DODGE',
+            'value': 0.25,
+            'factor': 'additive-multiplicatively'
+        }
+    ]
+    ninja_boots = Enhancer(name='Ninja Boots', description=description, properties=properties)
+
+    player = Player('Tixus')
+    player.add_statistic('DODGE', value=0, needs_rounding=False)
+    player.add_enhancer(ninja_boots)
+    player.add_enhancer(ninja_boots)
+
+    statistics = player.get_statistics()
+    assert statistics['DODGE'].actual_value == 0.3125
+
+def test_enhancers_may_define_their_own_formula():
+    # Custom enhancers are applied in the end of all calculations
+    description = 'Increases magic due to some secret formula'
+    properties = [
+        {
+            'statistic': 'MAGIC',
+            'factor': 'custom',
+            'formula': 'base_value * MULTIPLICATORS + STAMINA // 3 - SPEED // 5 + ADDITIONS'
+        },
+        {
+            'statistic': 'MAGIC',
+            'value': 2,
+            'factor': 'multiplicative'
+        },
+        {
+            'statistic': 'MAGIC',
+            'value': 3,
+            'factor': 'additive'
+        }
+    ]
+
+    stat_enhancer = Enhancer(name="Wild magic", description=description, properties=properties)
+
+    player = Player('Hercule')
+    player.add_statistic('SPEED', value=7)
+    player.add_statistic('MAGIC', value=2)
+    player.add_enhancer(stat_enhancer)
+
+    statistics = player.get_statistics()
+    assert statistics['MAGIC'].actual_value == 6
+
+def test_formula_expressions_can_be_parsed():
+    formula = parser.expr('base_value * MULTIPLIER + STAMINA // 3 - SPEED // 5 + ENHANCERS').compile()
+    value = eval(formula, {}, {'base_value': 3, 'MULTIPLIER': 1, 'STAMINA': 3, 'SPEED': 10, 'ENHANCERS': 3})
+    assert value == 5
+
+    # expr = NumExpr('base_value * MULTIPLIER + STAMINA / 3 - SPEED / 5 + ENHANCERS')
+
+    variables = {'base_value': 3, 'MULTIPLIER': 1, 'STAMINA': 3, 'SPEED': 10, 'ENHANCERS': 3, 'BANANAS': 8}
+
+    formula = Formula('base_value * MULTIPLIER + STAMINA // 3 - SPEED // 5 + ENHANCERS')
+    assert formula.evaluate(variables) == 5
+
+def test_reduce_with_multiplicative_formulas():
+    assert reduce(lambda x, y: x + x * y, [0.5, 0.5, 0.25]) == 0.9375
